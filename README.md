@@ -1,5 +1,16 @@
 # PHP_Laravel12_Secure_Logout_From_All_Devices
 
+# Introduction:
+```php
+⦁	PHP_Laravel12_Secure_Logout_From_All_Devices is a Laravel 12–based authentication security feature that allows a user to log out from all active devices and browsers at once.
+⦁	This implementation uses Laravel Breeze, database-driven sessions, and secure session invalidation logic, following Laravel’s best security practices.
+```
+# Features:
+```php
+⦁	Instantly logs the user out from every active session
+⦁	Works across browsers, devices, and locations
+```
+
 # Step 1: Install Fresh Laravel 12 Create Project
 Run command:
 ```php
@@ -186,6 +197,11 @@ Blade Code:
 @endsection
 ```
 # Step 9: Start Server
+Explanation:
+```php
+⦁	After running the Laravel project successfully, the application can be accessed through the web browser.
+⦁	This step is used to verify that the Secure Logout From All Devices feature is working correctly.
+```
 Run command:
 ```php
 php artisan serve
@@ -196,13 +212,26 @@ http://127.0.0.1:8000
 ```
 
 <img width="1193" height="513" alt="image" src="https://github.com/user-attachments/assets/fcbcd414-1c3d-4f27-927d-090917e060a7" />
+Output Description:
 
+```php
+⦁	Laravel Breeze default home page is displayed
+⦁	User can see Login and Register options
+⦁	Authentication system is active and working
+⦁	This confirms that Laravel application is running properly
+```
 After login, Open:
 ```php
 http://127.0.0.1:8000/security
 ```
 <img width="1312" height="630" alt="image" src="https://github.com/user-attachments/assets/d261e937-6c42-4e24-9abd-393d15b07067" />
 
+Output Description:
+```php
+⦁	Laravel checks whether the user is logged in
+⦁	If user is not logged in, redirect to login page
+⦁	If user is logged in, Security Settings page is displayed
+```
 # Project Folder Structure:
 ```php
 PHP_Laravel12_Secure_Logout_From_All_Devices
