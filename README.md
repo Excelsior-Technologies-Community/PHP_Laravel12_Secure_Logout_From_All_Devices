@@ -1,59 +1,230 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# PHP_Laravel12_Secure_Logout_From_All_Devices
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+# Step 1: Install Fresh Laravel 12 Create Project
+Run command:
+```php
+        composer create-project laravel/laravel PHP_Laravel12_Secure_Logout_From_All_Devices
+```
+# Step 2: Setup Database for .env file
+```php
+DB_CONNECTION=mysql
+DB_HOST=localhost
+DB_PORT=3307
+DB_DATABASE=laravel12_secure_logout
+DB_USERNAME=root
+DB_PASSWORD=
+```
+# Step 3: Create Database
+```php
+CREATE DATABASE laravel12_secure_logout;
+```
+# Step 4: Install Authentication (Laravel Breeze)
+1.Install Breeze:
+```php
+composer require laravel/breeze --dev
+```
+2.Install Breeze scaffolding:
+```php
+php artisan breeze:install
+```
+3.Run migrations:
+```php
+php artisan migrate
+```
+4.Build frontend assets:
+```php
+npm install
+npm run dev
+```
 
-## About Laravel
+# Step 5: Configure Session Driver for Security
+1.Update .env file:
+```php
+SESSION_DRIVER=database
+```
+2.Generate session table and migrate:
+```php
+php artisan session:table
+php artisan migrate
+```
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+# Step 6: Create Controller for Secure Logout
+Create controller:
+```php
+php artisan make:controller Auth/SecurityController
+```
+File Path:
+```php
+app/Http/Controllers/Auth/SecurityController.php
+```
+```php
+<?php
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+namespace App\Http\Controllers\Auth;
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+use App\Http\Controllers\Controller;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 
-## Learning Laravel
+class SecurityController extends Controller
+{
+    public function logoutAllDevices(Request $request)
+    {
+        $request->validate([
+            'password' => 'required'
+        ]);
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
+        if (!Hash::check($request->password, auth()->user()->password)) {
+            return back()->withErrors(['password' => 'Password does not match']);
+        }
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+        Auth::logoutOtherDevices($request->password);
 
-## Laravel Sponsors
+        return back()->with('success', 'Logged out from all other devices successfully!');
+    }
+}
+```
+# Step 7: Create Routes
+routes/web.php
+```php
+<?php
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+use App\Http\Controllers\ProfileController;
+use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Auth\SecurityController;
 
-### Premium Partners
+Route::get('/', function () {
+    return view('welcome');
+});
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+Route::get('/dashboard', function () {
+    return view('dashboard');
+})->middleware(['auth', 'verified'])->name('dashboard');
 
-## Contributing
+Route::middleware('auth')->group(function () {
+    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+});
+Route::post('/logout-all-devices', [SecurityController::class, 'logoutAllDevices'])
+    ->middleware('auth')
+    ->name('logout.all');
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+Route::get('/security', function () {
+    return view('profile.security');
+})->middleware('auth')->name('security.page');
 
-## Code of Conduct
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+require __DIR__.'/auth.php';
+```
 
-## Security Vulnerabilities
+# Step 8: Create Blade File 
+File Path:
+```php
+resources/views/profile/security.blade.php
+```
+Blade Code:
+```php
+@extends('layouts.app')
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+@section('content')
+<div class="container mt-5">
 
-## License
+    <h3 class="mb-4">Security Settings</h3>
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+    {{-- Success Message --}}
+    @if(session('success'))
+        <div class="alert alert-success">
+            {{ session('success') }}
+        </div>
+    @endif
+
+    {{-- Error Message --}}
+    @if($errors->any())
+        <div class="alert alert-danger">
+            @foreach ($errors->all() as $error)
+                <div>{{ $error }}</div>
+            @endforeach
+        </div>
+    @endif
+
+    <div class="card">
+        <div class="card-body">
+
+            <h5 class="card-title mb-3">
+                Logout from all devices
+            </h5>
+
+            <form method="POST" action="{{ route('logout.all') }}">
+                @csrf
+
+                <div class="mb-3">
+                    <label for="password" class="form-label">
+                        Confirm your password
+                    </label>
+
+                    <input
+                        type="password"
+                        name="password"
+                        id="password"
+                        class="form-control"
+                        placeholder="Enter your current password"
+                        required
+                    >
+                </div>
+
+                <button type="submit" class="btn btn-danger">
+                    Logout From All Devices
+                </button>
+            </form>
+
+        </div>
+    </div>
+
+</div>
+@endsection
+```
+# Step 9: Start Server
+Run command:
+```php
+php artisan serve
+```
+Open browser:
+```php
+http://127.0.0.1:8000
+```
+
+<img width="1193" height="513" alt="image" src="https://github.com/user-attachments/assets/fcbcd414-1c3d-4f27-927d-090917e060a7" />
+
+After login, Open:
+```php
+http://127.0.0.1:8000/security
+```
+<img width="1312" height="630" alt="image" src="https://github.com/user-attachments/assets/d261e937-6c42-4e24-9abd-393d15b07067" />
+
+# Project Folder Structure:
+```php
+PHP_Laravel12_Secure_Logout_From_All_Devices
+├── app/
+│   └── Http/
+│       └── Controllers/
+│           └── Auth/
+│               └── SecurityController.php
+│
+├── database/
+│   └── migrations/
+│       └── create_sessions_table.php
+│
+├── resources/
+│   └── views/
+│       └── profile/
+│           └── security.blade.php
+│
+├── routes/
+│   └── web.php
+│
+├── .env
+└── artisan
+```
+
