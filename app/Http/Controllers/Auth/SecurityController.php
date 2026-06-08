@@ -15,7 +15,7 @@ class SecurityController extends Controller
     /**
      * Security Page
      */
-    public function index()
+    public function index(Request $request)
     {
         $sessions = DB::table('sessions')
             ->where('user_id', auth()->id())
@@ -28,9 +28,8 @@ class SecurityController extends Controller
 
             $agent->setUserAgent($session->user_agent);
 
-            $session->browser = $agent->browser();
-
-            $session->platform = $agent->platform();
+            $session->browser = $agent->browser() ?: 'Unknown';
+            $session->platform = $agent->platform() ?: 'Unknown';
 
             $session->is_current_device =
                 $session->id === request()->session()->getId();
@@ -44,22 +43,95 @@ class SecurityController extends Controller
                 : 'Last Seen ' . $inactiveMinutes . ' mins ago';
         }
 
-        $totalDevices = $sessions->count();
+        /*
+        |--------------------------------------------------------------------------
+        | Search
+        |--------------------------------------------------------------------------
+        */
+        if ($request->filled('search')) {
 
+            $search = strtolower($request->search);
+
+            $sessions = $sessions->filter(function ($session) use ($search) {
+
+                return str_contains(
+                    strtolower($session->browser ?? ''),
+                    $search
+                ) ||
+                str_contains(
+                    strtolower($session->platform ?? ''),
+                    $search
+                ) ||
+                str_contains(
+                    strtolower($session->ip_address ?? ''),
+                    $search
+                );
+            });
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Device Filter
+        |--------------------------------------------------------------------------
+        */
+        if ($request->device_filter === 'current') {
+
+            $sessions = $sessions->where(
+                'is_current_device',
+                true
+            );
+        }
+
+        if ($request->device_filter === 'other') {
+
+            $sessions = $sessions->where(
+                'is_current_device',
+                false
+            );
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Statistics
+        |--------------------------------------------------------------------------
+        */
+        $totalDevices = DB::table('sessions')
+            ->where('user_id', auth()->id())
+            ->count();
+
+        $currentDevices = 1;
+
+        $otherDevices = max(
+            0,
+            $totalDevices - $currentDevices
+        );
+
+        $historyCount = LoginActivity::where(
+            'user_id',
+            auth()->id()
+        )->count();
+
+        /*
+        |--------------------------------------------------------------------------
+        | Login Activities
+        |--------------------------------------------------------------------------
+        */
         $activities = LoginActivity::where(
-                'user_id',
-                auth()->id()
-            )
-            ->latest()
-            ->take(10)
-            ->get();
+            'user_id',
+            auth()->id()
+        )
+        ->latest()
+        ->paginate(5);
 
         return view(
             'profile.security',
             compact(
                 'sessions',
                 'activities',
-                'totalDevices'
+                'totalDevices',
+                'currentDevices',
+                'otherDevices',
+                'historyCount'
             )
         );
     }
@@ -73,21 +145,40 @@ class SecurityController extends Controller
             'password' => ['required']
         ]);
 
-        if (!Hash::check(
-            $request->password,
-            auth()->user()->password
-        )) {
-
+        if (
+            !Hash::check(
+                $request->password,
+                auth()->user()->password
+            )
+        ) {
             return back()->withErrors([
-                'password' => 'Password does not match'
+                'password' => 'Password does not match.'
             ]);
         }
 
-        Auth::logoutOtherDevices($request->password);
+        Auth::logoutOtherDevices(
+            $request->password
+        );
 
         return back()->with(
             'success',
             'Logged out from all other devices successfully!'
+        );
+    }
+
+    /**
+     * Clear Login History
+     */
+    public function clearHistory()
+    {
+        LoginActivity::where(
+            'user_id',
+            auth()->id()
+        )->delete();
+
+        return back()->with(
+            'success',
+            'Login history cleared successfully.'
         );
     }
 }

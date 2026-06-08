@@ -2,308 +2,524 @@
 
 @section('content')
 
-<div class="container py-5">
+    <style>
+        body {
+            background: #f1f5f9;
+        }
 
-    <h2 class="mb-4 fw-bold">
-        Security Settings
-    </h2>
+        .security-title {
+            font-size: 32px;
+            font-weight: 700;
+            color: #0f172a;
+        }
 
-    {{-- SUCCESS MESSAGE --}}
-    @if(session('success'))
+        .stat-card {
+            border: none;
+            border-radius: 18px;
+            transition: all .3s ease;
+            background: #fff;
+        }
 
-    <div class="alert alert-success">
-        {{ session('success') }}
-    </div>
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
 
-    @endif
+        .stat-icon {
+            font-size: 35px;
+        }
 
-    {{-- ERROR MESSAGE --}}
-    @if($errors->any())
+        .shadow-soft {
+            box-shadow: 0 8px 25px rgba(0, 0, 0, .08);
+        }
 
-    <div class="alert alert-danger">
+        .custom-card {
+            border: none;
+            border-radius: 18px;
+            overflow: hidden;
+        }
 
-        @foreach($errors->all() as $error)
+        .custom-header {
+            background: linear-gradient(135deg, #2563eb, #1e40af);
+            color: #fff;
+            font-weight: 600;
+            padding: 15px 20px;
+        }
 
-        <div>{{ $error }}</div>
+        .table thead {
+            background: #0f172a;
+            color: white;
+        }
 
-        @endforeach
+        .table-hover tbody tr:hover {
+            background: #eff6ff;
+        }
 
-    </div>
+        .form-control,
+        .form-select {
+            border-radius: 10px;
+        }
 
-    @endif
+        .btn {
+            border-radius: 10px;
+        }
 
-    {{-- ACTIVE DEVICE COUNT --}}
-    <div class="alert alert-primary shadow-sm">
+        .pagination .page-link {
+            margin: 0 4px;
+            border-radius: 8px;
+        }
 
-        Active Devices:
-        <strong>{{ $totalDevices }}</strong>
+        .pagination .active .page-link {
+            background: #2563eb;
+            border-color: #2563eb;
+        }
+    </style>
 
-    </div>
+    <div class="container py-5">
 
-    {{-- LOGOUT ALL DEVICES --}}
-    <div class="card shadow-sm mb-4 border-0">
+        <div class="d-flex justify-content-between align-items-center mb-4">
 
-        <div class="card-body">
+            <h2 class="security-title">
+                🔐 Security Dashboard
+            </h2>
 
-            <h4 class="mb-3">
-                Logout From All Devices
-            </h4>
+            <span class="badge bg-success px-3 py-2">
+                Protected Account
+            </span>
 
-            <p class="text-muted">
-                This will logout your account
-                from all browsers and devices.
-            </p>
+        </div>
 
-            <form method="POST"
-                action="{{ route('logout.all') }}">
+        {{-- SUCCESS --}}
+        @if(session('success'))
+            <div class="alert alert-success alert-dismissible fade show">
 
-                @csrf
+                {{ session('success') }}
 
-                <div class="mb-3">
+                <button type="button" class="btn-close" data-bs-dismiss="alert">
+                </button>
 
-                    <label class="form-label">
-                        Confirm Password
-                    </label>
+            </div>
+        @endif
 
-                    <input type="password"
-                        name="password"
-                        class="form-control"
-                        placeholder="Enter current password"
-                        required>
+        {{-- ERRORS --}}
+        @if($errors->any())
+
+            <div class="alert alert-danger">
+
+                @foreach($errors->all() as $error)
+
+                    <div>{{ $error }}</div>
+
+                @endforeach
+
+            </div>
+
+        @endif
+
+        {{-- DASHBOARD CARDS --}}
+        <div class="row g-4 mb-4">
+
+            <div class="col-md-3">
+
+                <div class="card stat-card shadow-soft text-center">
+
+                    <div class="card-body">
+
+                        <div class="stat-icon text-primary mb-2">
+                            💻
+                        </div>
+
+                        <h2 class="fw-bold text-primary">
+                            {{ $totalDevices }}
+                        </h2>
+
+                        <p class="mb-0">
+                            Total Devices
+                        </p>
+
+                    </div>
 
                 </div>
 
-                <button type="submit"
-                    class="btn btn-danger">
+            </div>
 
-                    Logout Other Devices
+            <div class="col-md-3">
 
-                </button>
+                <div class="card stat-card shadow-soft text-center">
 
-            </form>
+                    <div class="card-body">
+
+                        <div class="stat-icon text-success mb-2">
+                            🖥️
+                        </div>
+
+                        <h2 class="fw-bold text-success">
+                            {{ $currentDevices }}
+                        </h2>
+
+                        <p class="mb-0">
+                            Current Device
+                        </p>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div class="col-md-3">
+
+                <div class="card stat-card shadow-soft text-center">
+
+                    <div class="card-body">
+
+                        <div class="stat-icon text-warning mb-2">
+                            📱
+                        </div>
+
+                        <h2 class="fw-bold text-warning">
+                            {{ $otherDevices }}
+                        </h2>
+
+                        <p class="mb-0">
+                            Other Devices
+                        </p>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div class="col-md-3">
+
+                <div class="card stat-card shadow-soft text-center">
+
+                    <div class="card-body">
+
+                        <div class="stat-icon text-danger mb-2">
+                            🕒
+                        </div>
+
+                        <h2 class="fw-bold text-danger">
+                            {{ $historyCount }}
+                        </h2>
+
+                        <p class="mb-0">
+                            Login Records
+                        </p>
+
+                    </div>
+
+                </div>
+
+            </div>
 
         </div>
 
-    </div>
+        {{-- LOGOUT DEVICES --}}
+        <div class="card custom-card shadow-soft mb-4">
 
-    {{-- ACTIVE DEVICE SESSIONS --}}
-    <div class="card shadow-sm border-0 mb-4">
+            <div class="custom-header">
+                Logout From All Devices
+            </div>
 
-        <div class="card-body">
+            <div class="card-body">
 
-            <h4 class="mb-4">
+                <p class="text-muted">
+                    Logout your account from all browsers and devices except your current session.
+                </p>
+
+                <form method="POST" action="{{ route('logout.all') }}">
+
+                    @csrf
+
+                    <div class="mb-3">
+
+                        <label class="form-label">
+                            Confirm Password
+                        </label>
+
+                        <input type="password" name="password" class="form-control" placeholder="Enter current password"
+                            required>
+
+                    </div>
+
+                    <button class="btn btn-danger">
+
+                        Logout Other Devices
+
+                    </button>
+
+                </form>
+
+            </div>
+
+        </div>
+
+        {{-- ACTIVE SESSIONS --}}
+        <div class="card custom-card shadow-soft mb-4">
+
+            <div class="custom-header">
                 Active Login Sessions
-            </h4>
+            </div>
 
-            <div class="table-responsive">
+            <div class="card-body">
 
-                <table class="table table-bordered align-middle">
+                <form method="GET" action="{{ route('security.page') }}" class="row g-3 mb-4">
 
-                    <thead class="table-light">
+                    <div class="col-md-5">
 
-                        <tr>
+                        <input type="text" name="search" class="form-control" placeholder="Search Browser, Platform or IP"
+                            value="{{ request('search') }}">
 
-                            <th>Browser</th>
+                    </div>
 
-                            <th>Platform</th>
+                    <div class="col-md-4">
 
-                            <th>IP Address</th>
+                        <select name="device_filter" class="form-select">
 
-                            <th>Last Activity</th>
+                            <option value="">
+                                All Devices
+                            </option>
 
-                            <th>Status</th>
+                            <option value="current" {{ request('device_filter') == 'current' ? 'selected' : '' }}>
+                                Current Device
+                            </option>
 
-                            <th>Activity Status</th>
+                            <option value="other" {{ request('device_filter') == 'other' ? 'selected' : '' }}>
+                                Other Devices
+                            </option>
 
-                        </tr>
+                        </select>
 
-                    </thead>
+                    </div>
 
-                    <tbody>
+                    <div class="col-md-3">
 
-                        @forelse($sessions as $session)
+                        <button class="btn btn-primary w-100">
+                            Search
+                        </button>
 
-                        <tr>
+                    </div>
 
-                            <td>
-                                {{ $session->browser }}
-                            </td>
+                </form>
 
-                            <td>
-                                {{ $session->platform }}
-                            </td>
+                <div class="table-responsive">
 
-                            <td>
-                                {{ $session->ip_address }}
-                            </td>
+                    <table class="table table-hover table-bordered align-middle">
 
-                            <td>
+                        <thead>
 
-                                {{ \Carbon\Carbon::createFromTimestamp(
-                                    $session->last_activity
-                                )->diffForHumans() }}
+                            <tr>
+                                <th>Browser</th>
+                                <th>Platform</th>
+                                <th>IP Address</th>
+                                <th>Last Activity</th>
+                                <th>Status</th>
+                                <th>Activity Status</th>
+                            </tr>
 
-                            </td>
+                        </thead>
 
-                            <td>
+                        <tbody>
 
-                                @if($session->is_current_device)
+                            @forelse($sessions as $session)
 
-                                <span class="badge bg-success">
-                                    Current Device
-                                </span>
+                                <tr>
 
-                                @else
+                                    <td>{{ $session->browser }}</td>
 
-                                <span class="badge bg-secondary">
-                                    Other Device
-                                </span>
+                                    <td>{{ $session->platform }}</td>
 
-                                @endif
+                                    <td>{{ $session->ip_address }}</td>
 
-                            </td>
+                                    <td>
+                                        {{ \Carbon\Carbon::createFromTimestamp($session->last_activity)->diffForHumans() }}
+                                    </td>
 
-                            <td>
+                                    <td>
 
-                                @if($session->last_seen == 'Online Now')
+                                        @if($session->is_current_device)
 
-                                <span class="badge bg-success">
-                                    {{ $session->last_seen }}
-                                </span>
+                                            <span class="badge bg-success">
+                                                Current Device
+                                            </span>
 
-                                @else
+                                        @else
 
-                                <span class="badge bg-warning text-dark">
-                                    {{ $session->last_seen }}
-                                </span>
+                                            <span class="badge bg-secondary">
+                                                Other Device
+                                            </span>
 
-                                @endif
+                                        @endif
 
-                            </td>
+                                    </td>
 
-                        </tr>
+                                    <td>
 
-                        @empty
+                                        @if($session->last_seen == 'Online Now')
 
-                        <tr>
+                                            <span class="badge bg-success">
+                                                Online Now
+                                            </span>
 
-                            <td colspan="6"
-                                class="text-center text-muted">
+                                        @else
 
-                                No active sessions found.
+                                            <span class="badge bg-warning text-dark">
+                                                {{ $session->last_seen }}
+                                            </span>
 
-                            </td>
+                                        @endif
 
-                        </tr>
+                                    </td>
 
-                        @endforelse
+                                </tr>
 
-                    </tbody>
+                            @empty
 
-                </table>
+                                <tr>
+
+                                    <td colspan="6" class="text-center">
+
+                                        No active sessions found.
+
+                                    </td>
+
+                                </tr>
+
+                            @endforelse
+
+                        </tbody>
+
+                    </table>
+
+                </div>
 
             </div>
 
         </div>
 
-    </div>
+        {{-- LOGIN HISTORY --}}
+        <div class="card custom-card shadow-soft">
 
-    {{-- LOGIN ACTIVITY HISTORY --}}
-    <div class="card shadow-sm border-0">
-
-        <div class="card-body">
-
-            <h4 class="mb-4">
+            <div class="custom-header">
                 Recent Login Activity
-            </h4>
+            </div>
 
-            <div class="table-responsive">
+            <div class="card-body">
 
-                <table class="table table-bordered align-middle">
+                <div class="d-flex justify-content-end mb-3">
 
-                    <thead class="table-light">
+                    <form method="POST" action="{{ route('security.clear-history') }}">
 
-                        <tr>
+                        @csrf
+                        @method('DELETE')
 
-                            <th>Browser</th>
+                        <button class="btn btn-danger btn-sm" onclick="return confirm('Clear all login history?')">
 
-                            <th>Platform</th>
+                            Clear History
 
-                            <th>IP Address</th>
+                        </button>
 
-                            <th>Login Time</th>
+                    </form>
 
-                            <th>Logout Time</th>
+                </div>
 
-                        </tr>
+                <div class="table-responsive">
 
-                    </thead>
+                    <table class="table table-hover table-bordered align-middle">
 
-                    <tbody>
+                        <thead>
 
-                        @forelse($activities as $activity)
+                            <tr>
+                                <th>Browser</th>
+                                <th>Platform</th>
+                                <th>IP Address</th>
+                                <th>Login Time</th>
+                                <th>Logout Time</th>
+                            </tr>
 
-                        <tr>
+                        </thead>
 
-                            <td>
-                                {{ $activity->browser }}
-                            </td>
+                        <tbody>
 
-                            <td>
-                                {{ $activity->platform }}
-                            </td>
+                            @forelse($activities as $activity)
 
-                            <td>
-                                {{ $activity->ip_address }}
-                            </td>
+                                <tr>
 
-                            <td>
-                                {{ $activity->login_at }}
-                            </td>
+                                    <td>{{ $activity->browser }}</td>
 
-                            <td>
+                                    <td>{{ $activity->platform }}</td>
 
-                                @if($activity->logout_at)
+                                    <td>{{ $activity->ip_address }}</td>
 
-                                {{ $activity->logout_at }}
+                                    <td>{{ $activity->login_at }}</td>
 
-                                @else
+                                    <td>
 
-                                <span class="badge bg-success">
-                                    Active Session
-                                </span>
+                                        @if($activity->logout_at)
 
-                                @endif
+                                            {{ $activity->logout_at }}
 
-                            </td>
+                                        @else
 
-                        </tr>
+                                            <span class="badge bg-success">
+                                                Active Session
+                                            </span>
 
-                        @empty
+                                        @endif
 
-                        <tr>
+                                    </td>
 
-                            <td colspan="5"
-                                class="text-center text-muted">
+                                </tr>
 
-                                No login history found.
+                            @empty
 
-                            </td>
+                                <tr>
 
-                        </tr>
+                                    <td colspan="5" class="text-center">
 
-                        @endforelse
+                                        No login history found.
 
-                    </tbody>
+                                    </td>
 
-                </table>
+                                </tr>
+
+                            @endforelse
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+                {{-- NUMBER PAGINATION ONLY --}}
+                <div class="d-flex justify-content-center mt-4">
+
+                    <ul class="pagination">
+
+                        @for($i = 1; $i <= $activities->lastPage(); $i++)
+
+                            <li class="page-item {{ $activities->currentPage() == $i ? 'active' : '' }}">
+
+                                <a class="page-link" href="{{ $activities->url($i) }}">
+
+                                    {{ $i }}
+
+                                </a>
+
+                            </li>
+
+                        @endfor
+
+                    </ul>
+
+                </div>
 
             </div>
 
         </div>
 
     </div>
-
-</div>
 
 @endsection

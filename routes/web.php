@@ -13,15 +13,24 @@ Route::get('/dashboard', function () {
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware('auth')->group(function () {
-    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
 
-    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::get('/profile', [ProfileController::class, 'edit'])
+        ->name('profile.edit');
 
-    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    Route::patch('/profile', [ProfileController::class, 'update'])
+        ->name('profile.update');
 
-    Route::get('/security', [SecurityController::class, 'index'])->name('security.page');
+    Route::delete('/profile', [ProfileController::class, 'destroy'])
+        ->name('profile.destroy');
 
-    Route::post('/logout-all-devices', [SecurityController::class, 'logoutAllDevices'])->name('logout.all');
+    Route::get('/security', [SecurityController::class, 'index'])
+        ->name('security.page');
+
+    Route::post('/logout-all-devices', [SecurityController::class, 'logoutAllDevices'])
+        ->name('logout.all');
+
+    Route::delete('/security/clear-history', [SecurityController::class, 'clearHistory'])
+        ->name('security.clear-history');
 });
 
-require __DIR__.'/auth.php';
+require __DIR__ . '/auth.php';
