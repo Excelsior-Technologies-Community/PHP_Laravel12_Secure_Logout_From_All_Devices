@@ -4,17 +4,14 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class LoginActivity extends Model
+class TrustedDevice extends Model
 {
     protected $fillable = [
         'user_id',
-        'ip_address',
+        'device_token',
         'browser',
         'platform',
-        'location',
-        'is_suspicious',
-        'is_new_device',
-        'login_at',
-        'logout_at',
+        'ip_address',
+        'trusted_at',
     ];
 }

@@ -51,7 +51,17 @@
                 Security Portal
             </a>
 
-            <div class="ms-auto d-flex align-items-center">
+            <div class="d-flex align-items-center gap-3 ms-auto">
+
+                @auth
+                    <a href="{{ route('security.page') }}" class="btn btn-outline-light btn-sm">
+                        <i class="bi bi-shield-check"></i> Security
+                    </a>
+                @endauth
+
+            </div>
+
+            <div class="ms-3 d-flex align-items-center">
 
                 @auth
 

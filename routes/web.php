@@ -14,23 +14,28 @@ Route::get('/dashboard', function () {
 
 Route::middleware('auth')->group(function () {
 
-    Route::get('/profile', [ProfileController::class, 'edit'])
-        ->name('profile.edit');
+    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
-    Route::patch('/profile', [ProfileController::class, 'update'])
-        ->name('profile.update');
+    // Security Dashboard
+    Route::get('/security', [SecurityController::class, 'index'])->name('security.page');
 
-    Route::delete('/profile', [ProfileController::class, 'destroy'])
-        ->name('profile.destroy');
+    // Logout All Other Devices
+    Route::post('/logout-all-devices', [SecurityController::class, 'logoutAllDevices'])->name('logout.all');
 
-    Route::get('/security', [SecurityController::class, 'index'])
-        ->name('security.page');
+    // Single Session Logout
+    Route::delete('/security/session/{sessionId}', [SecurityController::class, 'logoutSession'])->name('security.logout-session');
 
-    Route::post('/logout-all-devices', [SecurityController::class, 'logoutAllDevices'])
-        ->name('logout.all');
+    // Trust / Untrust Device
+    Route::post('/security/trust-device', [SecurityController::class, 'trustDevice'])->name('security.trust-device');
+    Route::delete('/security/untrust-device', [SecurityController::class, 'untrustDevice'])->name('security.untrust-device');
 
-    Route::delete('/security/clear-history', [SecurityController::class, 'clearHistory'])
-        ->name('security.clear-history');
+    // Clear Login History
+    Route::delete('/security/clear-history', [SecurityController::class, 'clearHistory'])->name('security.clear-history');
+
+    // Real-time Session Count (AJAX)
+    Route::get('/security/session-count', [SecurityController::class, 'sessionCount'])->name('security.session-count');
 });
 
 require __DIR__ . '/auth.php';
